@@ -38,6 +38,7 @@ def is_more_than_n_percent_different(arr, i, j, n):
     diff = (first-second)
     diff = diff if (diff >= 0) else -diff
     rate_of_change = (diff/first)*100
+    print("Log : Rate of change is  : " + str(rate_of_change))
     if(rate_of_change > n):
         return [True, rate_of_change]
     else:
@@ -52,37 +53,43 @@ def append_to_fixed_len_queu(deq, item, fixed_len):
         deq.appendleft(item)
     return deq
 
-def send_email(stock_symbol, rate_of_change):
+def send_email(mail, stock_symbol, rate_of_change):
     email_content = {}
-    stock_symbol = "stock_symbol : " + stock_symbol + "\n"
-    rate_of_change = "rate_of_change : " + rate_of_change + "\n"
+    stock_symbol = "stock_symbol : " + str(stock_symbol) + "\n"
+    rate_of_change = "rate_of_change : " + str(rate_of_change) + "\n"
 
     email_content["BODY"] =  stock_symbol + rate_of_change
     email_content["EMAIL_SUBJECT"] = "**** Stock ALERT ****"
-    ema.send_email(email_content)
+    ema.send_email(mail, email_content)
+    print("email sent :" + str(email_content))
 
 def main ():
-    stock_symbol = "ASX"
+    stock_symbol = "VVIX"
     client = oauth.get_client(cred.secrets);
-    check_stock_gap_time = 2
-    max_arr_len = 10
-    alert_time = 10
+
+    check_stock_gap_time = 60
+    max_arr_len = 60
+    alert_time = 10*60
+    rate_of_change_thresh = 3
     deq = coll.deque([])
     tick = 0
+    mail = ema.init_mail()
     while(True):
         time.sleep(1)
         tick = tick + 1
         if(tick >= alert_time):
             tick = 0
-            rate_of_change = is_more_than_n_percent_different(deq, 0, max_arr_len-1, 5)
+            rate_of_change = is_more_than_n_percent_different(deq, 0, max_arr_len-1, rate_of_change_thresh)
             if(rate_of_change[0]):
-                send_email(stock_symbol, rate_of_change)
+                print("Rate of change is higher than : " + str(rate_of_change_thresh))
+                send_email(mail, stock_symbol, rate_of_change)
+
         if(tick % check_stock_gap_time == 0):
             # eg: every 1 minute update stock price
             last_price = get_last_stock_quote(stock_symbol, client)
             last_price = float(last_price)
             deq = append_to_fixed_len_queu(deq, last_price, max_arr_len)
-            print(deq)
+            print("Log : Next Tick : " + str(deq))
 
 if(__name__ == "__main__"):
     main()
