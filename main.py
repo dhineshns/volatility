@@ -26,7 +26,7 @@ def get_last_stock_quote(stock_symbol, client):
 
         return get_last_price(json_obj)
     except Exception as e:
-        print("Error : The request has timed or errored out. " + e)
+        print("Error : The request has timed or errored out. " + str(e))
         return None
 
 # given an array of numbers, two indexes inside the array, tell if the two numbers are N percent more or less than each other
@@ -54,14 +54,16 @@ def append_to_fixed_len_queu(deq, item, fixed_len):
         deq.appendleft(item)
     return deq
 
-def send_email(mail, stock_symbol, rate_of_change):
+def send_email(stock_symbol, rate_of_change):
     email_content = {}
     stock_symbol = "stock_symbol : " + str(stock_symbol) + "\n"
     rate_of_change = "rate_of_change : " + str(rate_of_change) + "\n"
 
     email_content["BODY"] =  stock_symbol + rate_of_change
     email_content["EMAIL_SUBJECT"] = "**** Stock ALERT ****"
+    mail = ema.init_mail()
     ema.send_email(mail, email_content)
+    ema.quit_mail(mail)
     print("email sent :" + str(email_content))
 
 def main ():
@@ -70,11 +72,10 @@ def main ():
 
     check_stock_gap_time = 60
     max_arr_len = 60
-    alert_time = 10*60
-    rate_of_change_thresh = 0
+    alert_time = 3*60
+    rate_of_change_thresh = 2
     deq = coll.deque([])
     tick = 0
-    mail = ema.init_mail()
     while(True):
         time.sleep(1)
         tick = tick + 1
@@ -83,7 +84,7 @@ def main ():
             rate_of_change = is_more_than_n_percent_different(deq, 0, max_arr_len-1, rate_of_change_thresh)
             if(rate_of_change[0]):
                 print("Rate of change is higher than : " + str(rate_of_change_thresh))
-                send_email(mail, stock_symbol, rate_of_change)
+                send_email(stock_symbol, rate_of_change)
 
         if(tick % check_stock_gap_time == 0):
             # eg: every 1 minute update stock price
