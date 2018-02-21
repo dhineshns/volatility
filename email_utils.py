@@ -2,6 +2,7 @@ import smtplib
 from email.mime.text import MIMEText
 import user_cred as cred
 
+
 def init_mail():
     mail = smtplib.SMTP_SSL(cred.mail_creds["SMTP_SERVER"], cred.mail_creds["SMTP_PORT"])
     mail.set_debuglevel(True)
@@ -10,6 +11,7 @@ def init_mail():
     print("Log : Email Client Initialized")
     return mail
 
+# mail : returned object from init_mail
 # mail_content : dict with keys "BODY" AND "EMAIL_SUBJECT"
 def send_email(mail, mail_content):
     msg = MIMEText(mail_content["BODY"])

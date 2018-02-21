@@ -25,8 +25,8 @@ def get_last_stock_quote(stock_symbol, client):
         json_obj = js.loads(response[1])
 
         return get_last_price(json_obj)
-    except:
-        print("Error : The request has timed or errored out.")
+    except Exception as e:
+        print("Error : The request has timed or errored out. " + e)
         return None
 
 # given an array of numbers, two indexes inside the array, tell if the two numbers are N percent more or less than each other
@@ -71,7 +71,7 @@ def main ():
     check_stock_gap_time = 60
     max_arr_len = 60
     alert_time = 10*60
-    rate_of_change_thresh = 2
+    rate_of_change_thresh = 0
     deq = coll.deque([])
     tick = 0
     mail = ema.init_mail()
