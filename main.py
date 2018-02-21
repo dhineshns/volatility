@@ -16,17 +16,18 @@ def get_last_price(response):
 # stock_symbol : string
 # secrets: secret map
 def get_last_stock_quote(stock_symbol, client):
-    timeline_endpoint = "https://api.tradeking.com/v1/market/ext/quotes.json?symbols=" + stock_symbol
-    response = client.request(timeline_endpoint)
-    if(not response):
-        print ("Error : No response from endpoint")
-    # response is a tuple.
-    # first of tuple : headers
-    # second of tuple : response body
-    json_obj = js.loads(response[1])
-    if (json_obj == None):
-        print("Error : The response is not of the expected format")
-    return get_last_price(json_obj)
+    try:
+        timeline_endpoint = "https://api.tradeking.com/v1/market/ext/quotes.json?symbols=" + stock_symbol
+        response = client.request(timeline_endpoint)
+        # response is a tuple.
+        # first of tuple : headers
+        # second of tuple : response body
+        json_obj = js.loads(response[1])
+
+        return get_last_price(json_obj)
+    except:
+        print("Error : The request has timed or errored out.")
+        return None
 
 # given an array of numbers, two indexes inside the array, tell if the two numbers are N percent more or less than each other
 # returns a map {Bool Number}
@@ -70,7 +71,7 @@ def main ():
     check_stock_gap_time = 60
     max_arr_len = 60
     alert_time = 10*60
-    rate_of_change_thresh = 3
+    rate_of_change_thresh = 2
     deq = coll.deque([])
     tick = 0
     mail = ema.init_mail()
@@ -87,6 +88,8 @@ def main ():
         if(tick % check_stock_gap_time == 0):
             # eg: every 1 minute update stock price
             last_price = get_last_stock_quote(stock_symbol, client)
+            if(not last_price):
+                continue
             last_price = float(last_price)
             deq = append_to_fixed_len_queu(deq, last_price, max_arr_len)
             print("Log : Next Tick : " + str(deq))
